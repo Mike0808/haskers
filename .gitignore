@@ -1,0 +1,11 @@
+*.sql
+/media/avatars/
+/list.bk
+/question_form.html
+/templates/_base_bk.html
+/accounts/migrations/
+/answers/
+/questions/migrations/
+/.idea/
+*.pyc
+

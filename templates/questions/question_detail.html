@@ -1,0 +1,229 @@
+{% extends "_base.html" %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {#    {{ form.instance.title | default:"New Question" }} | {{ question.title }} {{ block.super }}#}
+    {{ question.title }}
+{% endblock title %}
+
+{% block content %}
+    {{ block.super }}
+    <br>
+    <div class="card" style="width: 36rem;">
+        <div class="row g-0 ">
+            <div class="col-md-4">
+                <div class="container h-100 border bg-light">
+                    <form class="p-3" action="{% url 'questions:question_vote' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col text-center">
+                                <input type="hidden" name="question_id" value="{{ question.pk }}">
+                                <button class="btn" type="submit" name="vote">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                         fill="currentColor"
+                                         class="bi bi-caret-up-fill" viewBox="2 0 15 15">
+                                        <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0
+                                            0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row ">
+                            <div class="col text-center">
+                                <h3>
+                                    <strong>{{ question.voted.all.count }}</strong>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col text-center">
+                                <button class="btn" type="submit" name="unvote">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                         fill="currentColor"
+                                         class="bi bi-caret-down-fill" viewBox="2 0 15 15">
+                                        <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1
+                                            1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {{ question.title }}
+                    </h5>
+                    <p class="card-text">
+                        {{ question.text }}
+                    </p>
+                    <p class="card-text">
+                        {% for tag in question.tags.all %}
+                            <a href="{% url 'questions:tagged' tag.slug %}"
+                               class="mr-1 badge badge-info">#{{ tag }}</a>
+                        {% endfor %}
+                    </p>
+                    {% if user == question.author %}
+                        <a class="btn btn-primary"
+                           href="{% url 'questions:question_update' pk=question.pk %}">Update Question</a>
+                        <a class="btn btn-primary"
+                           href="{% url 'questions:question_delete' pk=question.pk %}">Delete Question</a>
+                    {% endif %}
+                    <p class="card-text">
+                        <img class="img-thumbnail" src="{{ question.author.avatar.url }}"
+                             alt="{{ question.author.login }}"> {{ question.author.login }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </br>
+    <strong>Answers:</strong>
+    <div class="card" style="width: 38rem;">
+        {% for item in answers %}
+            <p></p>
+            <div class="card m-3" style="width: 36rem;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <div class="container h-100 border bg-light">
+                            <form action="{% url 'questions:answer_vote' %}" method="POST">
+                                <div class="row">
+                                    <div class="col text-center">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="answer_id" value="{{ item.id }}">
+                                        <input type="hidden" name="question_id" value="{{ question.pk }}">
+                                        <button class="btn" type="submit" name="answer_vote">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                 fill="currentColor"
+                                                 class="bi bi-caret-up-fill" viewBox="0 0 15 15">
+                                                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0
+                                            0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col text-center">
+                                        <h3>
+                                            <strong>{{ item.voted.all.count }}</strong>
+                                        </h3>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col text-center">
+                                        <button class="btn" type="submit" name="answer_unvote">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+                                                 fill="currentColor"
+                                                 class="bi bi-caret-down-fill" viewBox="0 0 15 15">
+                                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1
+                                            1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="row">
+                                <div class="col text-center">
+                                    <form action="{% url 'questions:answer_right' %}" method="post">
+                                        {% csrf_token %}
+                                        {% if user.is_authenticated %}
+                                            {% if user == question.author and right_flag == 0 %}
+                                                <div class="form-check">
+                                                    {{ form.right_flag | as_crispy_field }}
+                                                    <input type="hidden" name="answer_id" value="{{ item.id }}">
+                                                    <input type="hidden" name="question_id" value="{{ question.pk }}">
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col text-center">
+                                    {% if item.right_flag %}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="Blue"
+                                             class="bi bi-award-fill" viewBox="0 0 16 16">
+                                            <path style="fill: green" d="m8 0 1.669.864 1.858.282.842 1.68 1.337 1.32L13.4
+                                        6l.306 1.854-1.337 1.32-.842 1.68-1.858.282L8
+                                        12l-1.669-.864-1.858-.282-.842-1.68-1.337-1.32L2.6 6l-.306-1.854
+                                        1.337-1.32.842-1.68L6.331.864 8 0z"/>
+                                            <path style="fill: green" d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8
+                                        13.126 6.018 12.1 4 11.794z"/>
+                                        </svg>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <p class="card-text">
+                                {{ item.answer_text }}
+                            </p>
+                            <p class="card-text"><small class="text-muted">{{ item.created_at }}</small></p>
+                            {% if user == item.author %}
+                                <a class="btn btn-primary"
+                                   href="{% url 'questions:answer_update' pk=item.pk %}">Update Answer</a>
+                                <a class="btn btn-primary"
+                                   href="{% url 'questions:answer_delete' pk=item.pk %}">Delete Answer</a>
+                            {% endif %}
+                            {% if user.is_authenticated %}
+                                <p class="card-text">
+                                    <img class="img-thumbnail" src="{{ item.author.avatar.url }}"
+                                         alt="{{ item.author.login }}"> {{ item.author.login }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+
+            {% if answers.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ answers.previous_page_number }}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link">Previous</a>
+                </li>
+            {% endif %}
+            {% for page in answers.paginator.page_range %}
+                {% if page == answers.number %}
+                    <li class="page-item active"><a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                        {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item">
+                {% if answers.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ answers.next_page_number }}">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><a class="page-link">Next</a></li>
+                {% endif %}
+            </li>
+        </ul>
+    </nav>
+    {% if user.is_authenticated %}
+        <form method="POST" action="{% url 'questions:create_answer' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="answer_text" class="form-label">Answer</label>
+                <input type="hidden" name="question_id" value="{{ question.id }}">
+                <textarea class="form-control" name="answer_text" id="answer_text"
+                          rows="3">
+                </textarea>
+                <button type="submit" class="btn btn-primary">Answer!</button>
+            </div>
+        </form>
+    {% endif %}
+{% endblock content %}
