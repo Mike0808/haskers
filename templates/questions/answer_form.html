@@ -1,0 +1,31 @@
+{% extends "_base.html" %}
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+{% block title %}
+    {#    {{ form.instance.title | default:"New Question" }} | {{ question.title }} {{ block.super }}#}
+    {{ view.action|default:"Update" }} Answer
+{% endblock title %}
+
+{% block content %}
+    {{ block.super }}
+    <div class="col-sm-9 col-md-7 col-lg-9 mx-auto">
+        <div class="card card-signin my-5 border-info flex-row">
+            <div class="card-body">
+                {% with action=view.action|default:"Update" %}
+                    <h2 class="card-title text-center text-info">
+                        {{ action }} answer</h2>
+                    {% if user.is_authenticated %}
+                        <form method="POST" action=".">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                {{ form.answer_text | as_crispy_field }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

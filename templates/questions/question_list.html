@@ -1,0 +1,56 @@
+{% extends '_base.html' %}
+{% block title %}Questions{% endblock title %}
+{% block content %}
+    {{ block.super }}
+    {% for q in question_list %}
+        <div class="card mb-3" style="width: 36rem;">
+            <div class="row g-0">
+                <div class="col-md-4">
+                    <div class="h-100 w-50 border bg-light">
+                        <form class="p-3 " action="{% url 'questions:question_vote' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="question_id" value="{{ q.id }}">
+                            <button class="btn" type="submit" name="vote">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+                                     class="bi bi-caret-up-fill" viewBox="2 0 15 15">
+                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0
+                                0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/>
+                                </svg>
+                            </button>
+                            <h3 class="text-center">
+                                <strong>{{ q.voted.all.count }}</strong>
+                            </h3>
+                            <button class="btn" type="submit" name="unvote">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+                                     class="bi bi-caret-down-fill" viewBox="2 0 15 15">
+                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1
+                                1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <p class="card-body">
+
+                    <h5 class="card-title">
+                        <a href="{{ q.get_absolute_url }}">{{ q.title }}</a>
+                    </h5>
+                    <p class="card-text">
+                        {{ q.text | truncatewords:"20" }}
+                    </p>
+                    <p class="card-text"><small class="text-muted">{{ q.created_at }}</small></p>
+
+                    <p class="card-text">
+                        {% for tag in q.tags.all %}
+                            <a href="{% url 'questions:tagged' tag.slug %}"
+                               class="mr-1 badge badge-info">#{{ tag }}</a>
+                        {% endfor %}
+                        <img class="img-thumbnail" src="{{ q.author.avatar.url }}"
+                             alt="{{ q.author.login }}">{{ q.author.login }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock content %}
